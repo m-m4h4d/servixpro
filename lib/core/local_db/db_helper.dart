@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class DBHelper {
   static const String _dbName = 'servixpro.db';
@@ -14,15 +16,26 @@ class DBHelper {
   }
 
   static Future<Database> _initDB() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, _dbName);
+    if (kIsWeb) {
+      return await databaseFactoryFfiWeb.openDatabase(
+        _dbName,
+        options: OpenDatabaseOptions(
+          version: _dbVersion,
+          onCreate: _createDB,
+          onUpgrade: _onUpgrade,
+        ),
+      );
+    } else {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, _dbName);
 
-    return await openDatabase(
-      path,
-      version: _dbVersion,
-      onCreate: _createDB,
-      onUpgrade: _onUpgrade,
-    );
+      return await openDatabase(
+        path,
+        version: _dbVersion,
+        onCreate: _createDB,
+        onUpgrade: _onUpgrade,
+      );
+    }
   }
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
