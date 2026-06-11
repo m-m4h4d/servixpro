@@ -11,7 +11,7 @@ class SharedPrefsHelper {
     await _prefs.setBool('isDarkMode', isDark);
   }
 
-  static bool get isDarkMode => _prefs.getBool('isDarkMode') ?? false;
+  static bool get isDarkMode => _prefs.getBool('isDarkMode') ?? true;
 
   static Future<void> setLoggedInUserId(String id) async {
     await _prefs.setString('loggedInUserId', id);

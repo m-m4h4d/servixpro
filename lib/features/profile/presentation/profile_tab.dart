@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../main.dart';
 import '../../../core/shared_prefs/shared_prefs_helper.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -24,9 +26,23 @@ class ProfileTab extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const CircleAvatar(
-            radius: 50,
-            child: Icon(Icons.person, size: 50),
+          Center(
+            child: GestureDetector(
+              onTap: () async {
+                final picker = ImagePicker();
+                final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                if (pickedFile != null) {
+                  await ref.read(authStateProvider.notifier).updateProfileImage(pickedFile.path);
+                }
+              },
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: user.profileImage != null ? FileImage(File(user.profileImage!)) : null,
+                child: user.profileImage == null
+                    ? const Icon(Icons.camera_alt, size: 50)
+                    : null,
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Text(

@@ -5,6 +5,7 @@ class UserModel {
   final String phone;
   final String password;
   final String role; // 'Customer' or 'Provider'
+  final String? profileImage;
 
   UserModel({
     required this.id,
@@ -13,6 +14,7 @@ class UserModel {
     required this.phone,
     required this.password,
     required this.role,
+    this.profileImage,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class UserModel {
       'phone': phone,
       'password': password,
       'role': role,
+      'profileImage': profileImage,
     };
   }
 
@@ -34,6 +37,7 @@ class UserModel {
       phone: map['phone'],
       password: map['password'],
       role: map['role'],
+      profileImage: map['profileImage'],
     );
   }
 }

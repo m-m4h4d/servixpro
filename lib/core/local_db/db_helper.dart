@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DBHelper {
   static const String _dbName = 'servixpro.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   static Database? _database;
 
@@ -21,7 +21,14 @@ class DBHelper {
       path,
       version: _dbVersion,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE users ADD COLUMN profileImage TEXT');
+    }
   }
 
   static Future<void> _createDB(Database db, int version) async {
@@ -32,7 +39,8 @@ class DBHelper {
         email TEXT NOT NULL UNIQUE,
         phone TEXT NOT NULL,
         password TEXT NOT NULL,
-        role TEXT NOT NULL
+        role TEXT NOT NULL,
+        profileImage TEXT
       )
     ''');
 

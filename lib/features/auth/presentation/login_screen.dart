@@ -56,7 +56,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.handyman, size: 80, color: AppColors.primary),
+                Center(
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Welcome to ServixPro',

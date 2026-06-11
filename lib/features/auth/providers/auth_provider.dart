@@ -56,4 +56,20 @@ class AuthNotifier extends Notifier<UserModel?> {
     await SharedPrefsHelper.clearSession();
     state = null;
   }
+
+  Future<void> updateProfileImage(String imagePath) async {
+    final currentUser = state;
+    if (currentUser != null) {
+      await _repository.updateProfileImage(currentUser.id, imagePath);
+      state = UserModel(
+        id: currentUser.id,
+        fullName: currentUser.fullName,
+        email: currentUser.email,
+        phone: currentUser.phone,
+        password: currentUser.password,
+        role: currentUser.role,
+        profileImage: imagePath,
+      );
+    }
+  }
 }

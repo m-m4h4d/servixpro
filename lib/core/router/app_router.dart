@@ -53,13 +53,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = SharedPrefsHelper.loggedInUserId != null;
       final isGoingToLogin = state.matchedLocation == '/login';
+      final isGoingToSignup = state.matchedLocation == '/signup';
       final isAtSplash = state.matchedLocation == '/';
 
       if (isAtSplash) {
         return isLoggedIn ? '/dashboard' : '/login';
       }
 
-      if (!isLoggedIn && !isGoingToLogin) return '/login';
+      if (!isLoggedIn && !isGoingToLogin && !isGoingToSignup) return '/login';
       if (isLoggedIn && isGoingToLogin) return '/dashboard';
 
       return null;

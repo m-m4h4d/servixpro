@@ -49,4 +49,14 @@ class AuthRepository {
     }
     return null;
   }
+
+  Future<void> updateProfileImage(String id, String imagePath) async {
+    final db = await DBHelper.database;
+    await db.update(
+      'users',
+      {'profileImage': imagePath},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }
