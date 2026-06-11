@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -94,8 +96,8 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
             if (widget.service.imagePath != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                child: Image.file(
-                  File(widget.service.imagePath!),
+                child: Image(
+                  image: kIsWeb ? MemoryImage(base64Decode(widget.service.imagePath!)) as ImageProvider : FileImage(File(widget.service.imagePath!)),
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -125,7 +127,7 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
             const SizedBox(height: 16),
             Text(
               '\$${widget.service.price.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 20, color: AppColors.primary, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text('Description', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

@@ -61,8 +61,10 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ChoiceChip(
-                      label: Text(category),
+                      label: Text(category, style: TextStyle(color: _selectedCategory == category ? Colors.white : null)),
                       selected: _selectedCategory == category,
+                      checkmarkColor: Colors.white,
+                      side: _selectedCategory == category ? const BorderSide(color: Colors.white) : null,
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedCategory = category);
                       },
@@ -103,7 +105,7 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
                             const SizedBox(height: 8),
                             Text(service.category),
                             const SizedBox(height: 8),
-                            Text('\$${service.price.toStringAsFixed(2)}', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                            Text('\$${service.price.toStringAsFixed(2)}', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         trailing: Icon(isProvider ? Icons.edit : Icons.arrow_forward_ios),

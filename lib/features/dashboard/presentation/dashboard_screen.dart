@@ -75,27 +75,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           if (isDesktopWeb) ...[
             TextButton(
               onPressed: () => setState(() => _currentIndex = 0),
-              style: TextButton.styleFrom(foregroundColor: _currentIndex == 0 ? AppColors.secondary : Colors.white),
+              style: TextButton.styleFrom(foregroundColor: _currentIndex == 0 ? (ref.watch(themeProvider) ? AppColors.primary : AppColors.secondary) : Colors.white),
               child: const Text('Home'),
             ),
             TextButton(
               onPressed: () => setState(() => _currentIndex = 1),
-              style: TextButton.styleFrom(foregroundColor: _currentIndex == 1 ? AppColors.secondary : Colors.white),
+              style: TextButton.styleFrom(foregroundColor: _currentIndex == 1 ? (ref.watch(themeProvider) ? AppColors.primary : AppColors.secondary) : Colors.white),
               child: Text(isProvider ? 'My Services' : 'Services'),
             ),
             TextButton(
               onPressed: () => setState(() => _currentIndex = 2),
-              style: TextButton.styleFrom(foregroundColor: _currentIndex == 2 ? AppColors.secondary : Colors.white),
+              style: TextButton.styleFrom(foregroundColor: _currentIndex == 2 ? (ref.watch(themeProvider) ? AppColors.primary : AppColors.secondary) : Colors.white),
               child: const Text('Bookings'),
             ),
             TextButton(
               onPressed: () => setState(() => _currentIndex = 3),
-              style: TextButton.styleFrom(foregroundColor: _currentIndex == 3 ? AppColors.secondary : Colors.white),
+              style: TextButton.styleFrom(foregroundColor: _currentIndex == 3 ? (ref.watch(themeProvider) ? AppColors.primary : AppColors.secondary) : Colors.white),
               child: const Text('Alerts'),
             ),
             TextButton(
               onPressed: () => setState(() => _currentIndex = 4),
-              style: TextButton.styleFrom(foregroundColor: _currentIndex == 4 ? AppColors.secondary : Colors.white),
+              style: TextButton.styleFrom(foregroundColor: _currentIndex == 4 ? (ref.watch(themeProvider) ? AppColors.primary : AppColors.secondary) : Colors.white),
               child: const Text('Profile'),
             ),
             const SizedBox(width: 16),

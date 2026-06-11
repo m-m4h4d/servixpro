@@ -30,28 +30,42 @@ class BookingsTab extends ConsumerWidget {
                 child: ListTile(
                   title: Text('Service ID: ${booking.serviceId}'),
                   subtitle: Text('Status: ${booking.bookingStatus}\nDate: ${booking.bookingDate}'),
-                  trailing: isProvider && booking.bookingStatus == 'Pending'
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.check_circle, color: Colors.green),
-                              onPressed: () {
-                                ref.read(bookingControllerProvider.notifier).updateBookingStatus(booking.id, 'Accepted');
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () {
-                                ref.read(bookingControllerProvider.notifier).updateBookingStatus(booking.id, 'Rejected');
-                              },
-                            ),
-                          ],
-                        )
-                      : Text(booking.bookingStatus, style: TextStyle(
-                          color: booking.bookingStatus == 'Accepted' ? Colors.green : Colors.grey,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(booking.bookingStatus, style: TextStyle(
+                          color: booking.bookingStatus == 'Accepted' ? Colors.green : (booking.bookingStatus == 'Cancelled' || booking.bookingStatus == 'Rejected' ? Colors.red : Colors.grey),
                           fontWeight: FontWeight.bold,
-                        )),
+                      )),
+                      if (isProvider && booking.bookingStatus == 'Pending') ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.check_circle, color: Colors.green),
+                          tooltip: 'Accept Booking',
+                          onPressed: () {
+                            ref.read(bookingControllerProvider.notifier).updateBookingStatus(booking.id, 'Accepted');
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.cancel, color: Colors.red),
+                          tooltip: 'Reject Booking',
+                          onPressed: () {
+                            ref.read(bookingControllerProvider.notifier).updateBookingStatus(booking.id, 'Rejected');
+                          },
+                        ),
+                      ],
+                      if (!isProvider && (booking.bookingStatus == 'Pending' || booking.bookingStatus == 'Accepted')) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          tooltip: 'Cancel Booking',
+                          onPressed: () {
+                            ref.read(bookingControllerProvider.notifier).updateBookingStatus(booking.id, 'Cancelled');
+                          },
+                        ),
+                      ]
+                    ],
+                  ),
                 ),
               );
             },

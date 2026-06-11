@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,7 +24,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   String _selectedCategory = 'Home Cleaning';
-  File? _imageFile;
+  String? _imagePathToSave;
 
   final List<String> _categories = [
     'Home Cleaning',
@@ -47,9 +49,25 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+      if (kIsWeb) {
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _imagePathToSave = base64Encode(bytes);
+        });
+      } else {
+        setState(() {
+          _imagePathToSave = pickedFile.path;
+        });
+      }
+    }
+  }
+
+  ImageProvider? _getServiceImage(String? path) {
+    if (path == null) return null;
+    if (kIsWeb) {
+      return MemoryImage(base64Decode(path));
+    } else {
+      return FileImage(File(path));
     }
   }
 
@@ -66,7 +84,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
       category: _selectedCategory,
       providerId: user.id,
       price: double.parse(_priceController.text),
-      imagePath: _imageFile?.path,
+      imagePath: _imagePathToSave,
       createdAt: DateTime.now().toIso8601String(),
     );
 
@@ -102,10 +120,10 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                     borderRadius: BorderRadius.circular(AppConstants.borderRadius),
                     border: Border.all(color: Colors.grey),
                   ),
-                  child: _imageFile != null
+                  child: _imagePathToSave != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
+                          child: Image(image: _getServiceImage(_imagePathToSave)!, fit: BoxFit.cover),
                         )
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
