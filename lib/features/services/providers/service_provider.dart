@@ -19,22 +19,25 @@ final providerServicesProvider = FutureProvider<List<ServiceModel>>((ref) async 
 });
 
 // Notifier for adding/updating services
-final serviceControllerProvider = StateNotifierProvider<ServiceController, bool>((ref) {
-  return ServiceController(ref.watch(serviceRepositoryProvider), ref);
+final serviceControllerProvider = NotifierProvider<ServiceController, bool>(() {
+  return ServiceController();
 });
 
-class ServiceController extends StateNotifier<bool> {
-  final ServiceRepository _repository;
-  final Ref _ref;
+class ServiceController extends Notifier<bool> {
+  late final ServiceRepository _repository;
 
-  ServiceController(this._repository, this._ref) : super(false);
+  @override
+  bool build() {
+    _repository = ref.watch(serviceRepositoryProvider);
+    return false;
+  }
 
   Future<void> addService(ServiceModel service) async {
     state = true;
     try {
       await _repository.createService(service);
-      _ref.invalidate(allServicesProvider);
-      _ref.invalidate(providerServicesProvider);
+      ref.invalidate(allServicesProvider);
+      ref.invalidate(providerServicesProvider);
     } finally {
       state = false;
     }
@@ -44,8 +47,8 @@ class ServiceController extends StateNotifier<bool> {
     state = true;
     try {
       await _repository.deleteService(id);
-      _ref.invalidate(allServicesProvider);
-      _ref.invalidate(providerServicesProvider);
+      ref.invalidate(allServicesProvider);
+      ref.invalidate(providerServicesProvider);
     } finally {
       state = false;
     }

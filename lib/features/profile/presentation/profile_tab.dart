@@ -57,7 +57,7 @@ class ProfileTab extends ConsumerWidget {
             value: isDarkMode,
             onChanged: (value) async {
               await SharedPrefsHelper.setDarkMode(value);
-              ref.read(themeProvider.notifier).state = value;
+              ref.read(themeProvider.notifier).setTheme(value);
             },
           ),
           const Divider(),

@@ -5,15 +5,18 @@ import '../repositories/auth_repository.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository());
 
-final authStateProvider = StateNotifierProvider<AuthNotifier, UserModel?>((ref) {
-  return AuthNotifier(ref.watch(authRepositoryProvider));
+final authStateProvider = NotifierProvider<AuthNotifier, UserModel?>(() {
+  return AuthNotifier();
 });
 
-class AuthNotifier extends StateNotifier<UserModel?> {
-  final AuthRepository _repository;
+class AuthNotifier extends Notifier<UserModel?> {
+  late final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(null) {
+  @override
+  UserModel? build() {
+    _repository = ref.watch(authRepositoryProvider);
     _loadSession();
+    return null;
   }
 
   Future<void> _loadSession() async {

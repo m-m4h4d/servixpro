@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'constants.dart';
+import '../utils/constants.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -35,7 +35,7 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surfaceLight,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceLight,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -79,7 +79,7 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.surfaceDark,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceDark,
         elevation: 2,
         shape: RoundedRectangleBorder(

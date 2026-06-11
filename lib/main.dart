@@ -21,9 +21,20 @@ void main() async {
   );
 }
 
-final themeProvider = StateProvider<bool>((ref) {
-  return SharedPrefsHelper.isDarkMode;
+final themeProvider = NotifierProvider<ThemeNotifier, bool>(() {
+  return ThemeNotifier();
 });
+
+class ThemeNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return SharedPrefsHelper.isDarkMode;
+  }
+
+  void setTheme(bool isDark) {
+    state = isDark;
+  }
+}
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});

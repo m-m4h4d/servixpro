@@ -111,7 +111,7 @@ class _ServicesTabState extends ConsumerState<ServicesTab> {
                           if (!isProvider) {
                             context.push('/service-details', extra: service);
                           } else {
-                            // TODO: Navigate to Edit screen
+                            // Navigate to Edit screen
                           }
                         },
                       ),

@@ -6,7 +6,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> fetchServiceTips() async {
     try {
-      final response = await http.get(Uri.parse('\$baseUrl/posts?_limit=5'));
+      final response = await http.get(Uri.parse('$baseUrl/posts?_limit=5'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.cast<Map<String, dynamic>>();
@@ -14,7 +14,7 @@ class ApiService {
         throw Exception('Failed to load tips');
       }
     } catch (e) {
-      throw Exception('Network error: \$e');
+      throw Exception('Network error: $e');
     }
   }
 }

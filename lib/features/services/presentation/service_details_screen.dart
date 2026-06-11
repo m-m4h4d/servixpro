@@ -69,7 +69,7 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
     await NotificationHelper.showNotification(
       id: booking.id.hashCode,
       title: 'Booking Requested',
-      body: 'Your request for \${widget.service.title} has been sent.',
+      body: 'Your request for ${widget.service.title} has been sent.',
     );
 
     if (mounted) {
@@ -99,7 +99,7 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (context, error, stackTrace) => Container(
                     height: 200,
                     color: Colors.grey[300],
                     child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
@@ -110,7 +110,7 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
               Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppConstants.borderRadius),
                 ),
                 child: const Icon(Icons.handyman, size: 80, color: AppColors.primary),

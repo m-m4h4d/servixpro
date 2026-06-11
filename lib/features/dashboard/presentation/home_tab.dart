@@ -51,7 +51,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome, \${user?.fullName ?? ''}'),
+        title: Text('Welcome, ${user?.fullName ?? ''}'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

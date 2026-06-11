@@ -20,21 +20,24 @@ final myBookingsProvider = FutureProvider<List<BookingModel>>((ref) async {
   }
 });
 
-final bookingControllerProvider = StateNotifierProvider<BookingController, bool>((ref) {
-  return BookingController(ref.watch(bookingRepositoryProvider), ref);
+final bookingControllerProvider = NotifierProvider<BookingController, bool>(() {
+  return BookingController();
 });
 
-class BookingController extends StateNotifier<bool> {
-  final BookingRepository _repository;
-  final Ref _ref;
+class BookingController extends Notifier<bool> {
+  late final BookingRepository _repository;
 
-  BookingController(this._repository, this._ref) : super(false);
+  @override
+  bool build() {
+    _repository = ref.watch(bookingRepositoryProvider);
+    return false;
+  }
 
   Future<void> createBooking(BookingModel booking) async {
     state = true;
     try {
       await _repository.createBooking(booking);
-      _ref.invalidate(myBookingsProvider);
+      ref.invalidate(myBookingsProvider);
     } finally {
       state = false;
     }
@@ -44,7 +47,7 @@ class BookingController extends StateNotifier<bool> {
     state = true;
     try {
       await _repository.updateBookingStatus(id, status);
-      _ref.invalidate(myBookingsProvider);
+      ref.invalidate(myBookingsProvider);
     } finally {
       state = false;
     }
