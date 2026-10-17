@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/utils/constants.dart';
-import '../models/user.dart';
 import '../providers/auth_provider.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -38,21 +36,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     setState(() => _isLoading = true);
 
-    final user = UserModel(
-      id: const Uuid().v4(),
-      fullName: _fullNameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      password: _passwordController.text,
-      role: _selectedRole,
-    );
-
-    final error = await ref.read(authStateProvider.notifier).signUp(user);
+    final result = await ref.read(authStateProvider.notifier).signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          fullName: _fullNameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          role: _selectedRole,
+        );
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      if (result.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.error!)));
+      } else if (result.needsConfirmation) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Check your email to confirm your account, then log in.')),
+        );
+        context.go('/login');
       } else {
         context.go('/dashboard');
       }

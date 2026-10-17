@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/shared_prefs/shared_prefs_helper.dart';
+import 'core/supabase/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/utils/notification_helper.dart';
@@ -10,6 +11,9 @@ void main() async {
   
   // Initialize Shared Preferences
   await SharedPrefsHelper.init();
+
+  // Initialize Supabase (restores any saved session)
+  await SupabaseConfig.init();
   
   // Initialize Notifications
   await NotificationHelper.init();

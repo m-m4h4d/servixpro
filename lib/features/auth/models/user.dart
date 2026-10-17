@@ -3,7 +3,6 @@ class UserModel {
   final String fullName;
   final String email;
   final String phone;
-  final String password;
   final String role; // 'Customer' or 'Provider'
   final String? profileImage;
 
@@ -12,32 +11,29 @@ class UserModel {
     required this.fullName,
     required this.email,
     required this.phone,
-    required this.password,
     required this.role,
     this.profileImage,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'fullName': fullName,
-      'email': email,
-      'phone': phone,
-      'password': password,
-      'role': role,
-      'profileImage': profileImage,
-    };
+  UserModel copyWith({String? profileImage}) {
+    return UserModel(
+      id: id,
+      fullName: fullName,
+      email: email,
+      phone: phone,
+      role: role,
+      profileImage: profileImage ?? this.profileImage,
+    );
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       id: map['id'],
-      fullName: map['fullName'],
+      fullName: map['full_name'],
       email: map['email'],
-      phone: map['phone'],
-      password: map['password'],
+      phone: map['phone'] ?? '',
       role: map['role'],
-      profileImage: map['profileImage'],
+      profileImage: map['profile_image'],
     );
   }
 }

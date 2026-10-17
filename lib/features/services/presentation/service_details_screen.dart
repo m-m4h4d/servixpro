@@ -1,15 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/notification_helper.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../models/service_model.dart';
-import '../../bookings/models/booking_model.dart';
 import '../../bookings/providers/booking_provider.dart';
 
 class ServiceDetailsScreen extends ConsumerStatefulWidget {
@@ -53,23 +47,26 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
       return;
     }
 
-    final user = ref.read(authStateProvider);
-    if (user == null) return;
-
-    final booking = BookingModel(
-      id: const Uuid().v4(),
-      serviceId: widget.service.id,
-      customerId: user.id,
-      bookingDate: _selectedDate!.toIso8601String(),
-      bookingStatus: 'Pending',
-      notes: _notesController.text.trim(),
-    );
-
-    await ref.read(bookingControllerProvider.notifier).createBooking(booking);
+    final String bookingId;
+    try {
+      final booking = await ref.read(bookingControllerProvider.notifier).createBooking(
+            serviceId: widget.service.id,
+            bookingDate: _selectedDate!,
+            notes: _notesController.text.trim(),
+          );
+      bookingId = booking.id;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not send booking request. Please try again.')),
+        );
+      }
+      return;
+    }
 
     // Simulate sending a local notification
     await NotificationHelper.showNotification(
-      id: booking.id.hashCode,
+      id: bookingId.hashCode,
       title: 'Booking Requested',
       body: 'Your request for ${widget.service.title} has been sent.',
     );
@@ -93,11 +90,11 @@ class _ServiceDetailsScreenState extends ConsumerState<ServiceDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (widget.service.imagePath != null)
+            if (widget.service.imageUrl != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                child: Image(
-                  image: kIsWeb ? MemoryImage(base64Decode(widget.service.imagePath!)) as ImageProvider : FileImage(File(widget.service.imagePath!)),
+                child: Image.network(
+                  widget.service.imageUrl!,
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../shared_prefs/shared_prefs_helper.dart';
+import '../supabase/supabase_config.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
@@ -51,7 +51,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (context, state) {
-      final isLoggedIn = SharedPrefsHelper.loggedInUserId != null;
+      final isLoggedIn = supabase.auth.currentSession != null;
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToSignup = state.matchedLocation == '/signup';
       final isAtSplash = state.matchedLocation == '/';

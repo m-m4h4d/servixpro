@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,15 +8,6 @@ import '../../auth/providers/auth_provider.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
-
-  ImageProvider? _getProfileImage(String? path) {
-    if (path == null) return null;
-    if (kIsWeb) {
-      return MemoryImage(base64Decode(path));
-    } else {
-      return FileImage(File(path));
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,19 +31,22 @@ class ProfileTab extends ConsumerWidget {
                 final picker = ImagePicker();
                 final pickedFile = await picker.pickImage(source: ImageSource.gallery);
                 if (pickedFile != null) {
-                  String imagePathToSave;
-                  if (kIsWeb) {
-                    final bytes = await pickedFile.readAsBytes();
-                    imagePathToSave = base64Encode(bytes);
-                  } else {
-                    imagePathToSave = pickedFile.path;
+                  final bytes = await pickedFile.readAsBytes();
+                  final extension = pickedFile.name.contains('.') ? pickedFile.name.split('.').last : null;
+                  try {
+                    await ref.read(authStateProvider.notifier).updateProfileImage(bytes, extension);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not update profile picture.')),
+                      );
+                    }
                   }
-                  await ref.read(authStateProvider.notifier).updateProfileImage(imagePathToSave);
                 }
               },
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: _getProfileImage(user.profileImage),
+                backgroundImage: user.profileImage != null ? NetworkImage(user.profileImage!) : null,
                 child: user.profileImage == null
                     ? const Icon(Icons.camera_alt, size: 50)
                     : null,
