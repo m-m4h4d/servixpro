@@ -1,5 +1,7 @@
+import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/shared_prefs/shared_prefs_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user.dart';
 import '../repositories/auth_repository.dart';
 
@@ -15,61 +17,79 @@ class AuthNotifier extends Notifier<UserModel?> {
   @override
   UserModel? build() {
     _repository = ref.watch(authRepositoryProvider);
-    _loadSession();
+
+    // Keep the profile in sync with the Supabase session (restored sessions,
+    // token refreshes, sign-outs from elsewhere).
+    final subscription = _repository.authStateChanges.listen((data) {
+      final user = data.session?.user;
+      if (user == null) {
+        state = null;
+      } else if (state?.id != user.id) {
+        _loadProfile(user.id);
+      }
+    });
+    ref.onDispose(subscription.cancel);
+
     return null;
   }
 
-  Future<void> _loadSession() async {
-    final userId = SharedPrefsHelper.loggedInUserId;
-    if (userId != null) {
-      final user = await _repository.getUserById(userId);
-      state = user;
+  Future<void> _loadProfile(String userId) async {
+    try {
+      state = await _repository.getUserById(userId);
+    } catch (_) {
+      // Leave the state as is; screens will show the signed-out view.
     }
   }
 
   Future<String?> login(String email, String password) async {
-    final user = await _repository.login(email, password);
-    if (user != null) {
-      await SharedPrefsHelper.setLoggedInUserId(user.id);
-      state = user;
+    try {
+      await _repository.login(email, password);
+      await _loadProfile(_repository.currentUser!.id);
       return null; // Success
+    } on AuthException catch (e) {
+      return e.message;
+    } catch (e) {
+      return 'Login failed. Check your connection and try again.';
     }
-    return 'Invalid email or password';
   }
 
-  Future<String?> signUp(UserModel user) async {
-    final exists = await _repository.checkEmailExists(user.email);
-    if (exists) {
-      return 'Email already exists';
-    }
+  /// Returns null on success, or a message to show the user. [needsConfirmation]
+  /// is set when the project requires email confirmation before signing in.
+  Future<({String? error, bool needsConfirmation})> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phone,
+    required String role,
+  }) async {
     try {
-      await _repository.signUp(user);
-      await SharedPrefsHelper.setLoggedInUserId(user.id);
-      state = user;
-      return null; // Success
+      final signedIn = await _repository.signUp(
+        email: email,
+        password: password,
+        fullName: fullName,
+        phone: phone,
+        role: role,
+      );
+      if (!signedIn) return (error: null, needsConfirmation: true);
+      await _loadProfile(_repository.currentUser!.id);
+      return (error: null, needsConfirmation: false);
+    } on AuthException catch (e) {
+      return (error: e.message, needsConfirmation: false);
     } catch (e) {
-      return 'Sign up failed';
+      return (error: 'Sign up failed. Check your connection and try again.', needsConfirmation: false);
     }
   }
 
   Future<void> logout() async {
-    await SharedPrefsHelper.clearSession();
+    await _repository.logout();
     state = null;
   }
 
-  Future<void> updateProfileImage(String imagePath) async {
+  Future<void> updateProfileImage(Uint8List bytes, String? extension) async {
     final currentUser = state;
     if (currentUser != null) {
-      await _repository.updateProfileImage(currentUser.id, imagePath);
-      state = UserModel(
-        id: currentUser.id,
-        fullName: currentUser.fullName,
-        email: currentUser.email,
-        phone: currentUser.phone,
-        password: currentUser.password,
-        role: currentUser.role,
-        profileImage: imagePath,
-      );
+      final url = await _repository.updateProfileImage(currentUser.id, bytes, extension);
+      state = currentUser.copyWith(profileImage: url);
     }
   }
 }

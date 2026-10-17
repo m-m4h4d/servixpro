@@ -1,14 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/constants.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../models/service_model.dart';
 import '../providers/service_provider.dart';
 
 class AddServiceScreen extends ConsumerStatefulWidget {
@@ -24,7 +19,8 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   String _selectedCategory = 'Home Cleaning';
-  String? _imagePathToSave;
+  Uint8List? _imageBytes;
+  String? _imageExtension;
 
   final List<String> _categories = [
     'Home Cleaning',
@@ -49,46 +45,34 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      if (kIsWeb) {
-        final bytes = await pickedFile.readAsBytes();
-        setState(() {
-          _imagePathToSave = base64Encode(bytes);
-        });
-      } else {
-        setState(() {
-          _imagePathToSave = pickedFile.path;
-        });
-      }
-    }
-  }
-
-  ImageProvider? _getServiceImage(String? path) {
-    if (path == null) return null;
-    if (kIsWeb) {
-      return MemoryImage(base64Decode(path));
-    } else {
-      return FileImage(File(path));
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _imageBytes = bytes;
+        _imageExtension = pickedFile.name.contains('.') ? pickedFile.name.split('.').last : null;
+      });
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final user = ref.read(authStateProvider);
-    if (user == null) return;
-
-    final service = ServiceModel(
-      id: const Uuid().v4(),
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      category: _selectedCategory,
-      providerId: user.id,
-      price: double.parse(_priceController.text),
-      imagePath: _imagePathToSave,
-      createdAt: DateTime.now().toIso8601String(),
-    );
-
-    await ref.read(serviceControllerProvider.notifier).addService(service);
+    try {
+      await ref.read(serviceControllerProvider.notifier).addService(
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            category: _selectedCategory,
+            price: double.parse(_priceController.text),
+            imageBytes: _imageBytes,
+            imageExtension: _imageExtension,
+          );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not create service. Please try again.')),
+        );
+      }
+      return;
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,10 +104,10 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                     borderRadius: BorderRadius.circular(AppConstants.borderRadius),
                     border: Border.all(color: Colors.grey),
                   ),
-                  child: _imagePathToSave != null
+                  child: _imageBytes != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                          child: Image(image: _getServiceImage(_imagePathToSave)!, fit: BoxFit.cover),
+                          child: Image.memory(_imageBytes!, fit: BoxFit.cover),
                         )
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,

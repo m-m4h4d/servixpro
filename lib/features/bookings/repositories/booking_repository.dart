@@ -1,51 +1,47 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqflite/sqflite.dart';
-import '../../../core/local_db/db_helper.dart';
+import '../../../core/supabase/supabase_config.dart';
 import '../models/booking_model.dart';
 
 final bookingRepositoryProvider = Provider((ref) => BookingRepository());
 
 class BookingRepository {
-  Future<void> createBooking(BookingModel booking) async {
-    final db = await DBHelper.database;
-    await db.insert(
-      'bookings',
-      booking.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+  Future<BookingModel> createBooking({
+    required String serviceId,
+    required DateTime bookingDate,
+    String? notes,
+  }) async {
+    // customer_id and booking_status default to the caller and 'Pending'.
+    final map = await supabase
+        .from('bookings')
+        .insert({
+          'service_id': serviceId,
+          'booking_date': bookingDate.toIso8601String().split('T').first,
+          'notes': notes,
+        })
+        .select()
+        .single();
+    return BookingModel.fromMap(map);
   }
 
   Future<List<BookingModel>> getBookingsForCustomer(String customerId) async {
-    final db = await DBHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'bookings',
-      where: 'customerId = ?',
-      whereArgs: [customerId],
-    );
-    return maps.map((e) => BookingModel.fromMap(e)).toList();
+    final maps = await supabase
+        .from('bookings')
+        .select()
+        .eq('customer_id', customerId)
+        .order('created_at', ascending: false);
+    return maps.map(BookingModel.fromMap).toList();
   }
 
-  Future<List<BookingModel>> getBookingsForProviderServices(List<String> serviceIds) async {
-    if (serviceIds.isEmpty) return [];
-    
-    final db = await DBHelper.database;
-    final placeholders = List.filled(serviceIds.length, '?').join(',');
-    
-    final List<Map<String, dynamic>> maps = await db.query(
-      'bookings',
-      where: 'serviceId IN ($placeholders)',
-      whereArgs: serviceIds,
-    );
-    return maps.map((e) => BookingModel.fromMap(e)).toList();
+  Future<List<BookingModel>> getBookingsForProvider(String providerId) async {
+    final maps = await supabase
+        .from('bookings')
+        .select('*, services!inner(provider_id)')
+        .eq('services.provider_id', providerId)
+        .order('created_at', ascending: false);
+    return maps.map(BookingModel.fromMap).toList();
   }
 
   Future<void> updateBookingStatus(String bookingId, String newStatus) async {
-    final db = await DBHelper.database;
-    await db.update(
-      'bookings',
-      {'bookingStatus': newStatus},
-      where: 'id = ?',
-      whereArgs: [bookingId],
-    );
+    await supabase.from('bookings').update({'booking_status': newStatus}).eq('id', bookingId);
   }
 }

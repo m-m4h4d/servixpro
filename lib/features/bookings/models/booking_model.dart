@@ -3,7 +3,7 @@ class BookingModel {
   final String serviceId;
   final String customerId;
   final String bookingDate;
-  final String bookingStatus; // 'Pending', 'Accepted', 'Rejected', 'Completed'
+  final String bookingStatus; // 'Pending', 'Accepted', 'Rejected', 'Cancelled', 'Completed'
   final String? notes;
 
   BookingModel({
@@ -15,24 +15,13 @@ class BookingModel {
     this.notes,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'serviceId': serviceId,
-      'customerId': customerId,
-      'bookingDate': bookingDate,
-      'bookingStatus': bookingStatus,
-      'notes': notes,
-    };
-  }
-
   factory BookingModel.fromMap(Map<String, dynamic> map) {
     return BookingModel(
       id: map['id'],
-      serviceId: map['serviceId'],
-      customerId: map['customerId'],
-      bookingDate: map['bookingDate'],
-      bookingStatus: map['bookingStatus'],
+      serviceId: map['service_id'],
+      customerId: map['customer_id'],
+      bookingDate: map['booking_date'],
+      bookingStatus: map['booking_status'],
       notes: map['notes'],
     );
   }

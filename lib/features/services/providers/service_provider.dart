@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/service_model.dart';
 import '../repositories/service_repository.dart';
@@ -32,10 +33,24 @@ class ServiceController extends Notifier<bool> {
     return false;
   }
 
-  Future<void> addService(ServiceModel service) async {
+  Future<void> addService({
+    required String title,
+    required String description,
+    required String category,
+    required double price,
+    Uint8List? imageBytes,
+    String? imageExtension,
+  }) async {
     state = true;
     try {
-      await _repository.createService(service);
+      await _repository.createService(
+        title: title,
+        description: description,
+        category: category,
+        price: price,
+        imageBytes: imageBytes,
+        imageExtension: imageExtension,
+      );
       ref.invalidate(allServicesProvider);
       ref.invalidate(providerServicesProvider);
     } finally {

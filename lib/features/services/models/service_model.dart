@@ -5,7 +5,7 @@ class ServiceModel {
   final String category;
   final String providerId;
   final double price;
-  final String? imagePath;
+  final String? imageUrl;
   final double rating;
   final bool availability;
   final String createdAt;
@@ -17,26 +17,11 @@ class ServiceModel {
     required this.category,
     required this.providerId,
     required this.price,
-    this.imagePath,
+    this.imageUrl,
     this.rating = 0.0,
     this.availability = true,
     required this.createdAt,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'category': category,
-      'providerId': providerId,
-      'price': price,
-      'imagePath': imagePath,
-      'rating': rating,
-      'availability': availability ? 1 : 0,
-      'createdAt': createdAt,
-    };
-  }
 
   factory ServiceModel.fromMap(Map<String, dynamic> map) {
     return ServiceModel(
@@ -44,12 +29,12 @@ class ServiceModel {
       title: map['title'],
       description: map['description'],
       category: map['category'],
-      providerId: map['providerId'],
-      price: map['price'],
-      imagePath: map['imagePath'],
-      rating: map['rating'],
-      availability: map['availability'] == 1,
-      createdAt: map['createdAt'],
+      providerId: map['provider_id'],
+      price: (map['price'] as num).toDouble(),
+      imageUrl: map['image_url'],
+      rating: (map['rating'] as num? ?? 0).toDouble(),
+      availability: map['availability'] ?? true,
+      createdAt: map['created_at'],
     );
   }
 }

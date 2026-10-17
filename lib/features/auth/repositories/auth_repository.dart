@@ -1,62 +1,48 @@
-import 'package:sqflite/sqflite.dart';
-import '../../../core/local_db/db_helper.dart';
+import 'dart:typed_data';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/supabase/storage_helper.dart';
+import '../../../core/supabase/supabase_config.dart';
 import '../models/user.dart';
 
 class AuthRepository {
-  Future<UserModel?> login(String email, String password) async {
-    final db = await DBHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
-    );
+  User? get currentUser => supabase.auth.currentUser;
 
-    if (maps.isNotEmpty) {
-      return UserModel.fromMap(maps.first);
-    }
-    return null;
+  Stream<AuthState> get authStateChanges => supabase.auth.onAuthStateChange;
+
+  Future<void> login(String email, String password) async {
+    await supabase.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<bool> checkEmailExists(String email) async {
-    final db = await DBHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
+  /// Returns true if the user is signed in straight away, false if they must
+  /// confirm their email first.
+  Future<bool> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phone,
+    required String role,
+  }) async {
+    // The profile row is created by the on_auth_user_created trigger from this metadata.
+    final response = await supabase.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': fullName, 'phone': phone, 'role': role},
     );
-    return maps.isNotEmpty;
+    return response.session != null;
   }
 
-  Future<void> signUp(UserModel user) async {
-    final db = await DBHelper.database;
-    await db.insert(
-      'users',
-      user.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.fail,
-    );
+  Future<void> logout() async {
+    await supabase.auth.signOut();
   }
 
   Future<UserModel?> getUserById(String id) async {
-    final db = await DBHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isNotEmpty) {
-      return UserModel.fromMap(maps.first);
-    }
-    return null;
+    final map = await supabase.from('profiles').select().eq('id', id).maybeSingle();
+    return map == null ? null : UserModel.fromMap(map);
   }
 
-  Future<void> updateProfileImage(String id, String imagePath) async {
-    final db = await DBHelper.database;
-    await db.update(
-      'users',
-      {'profileImage': imagePath},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+  Future<String> updateProfileImage(String id, Uint8List bytes, String? extension) async {
+    final url = await StorageHelper.uploadImage(bytes, name: 'avatar', extension: extension);
+    await supabase.from('profiles').update({'profile_image': url}).eq('id', id);
+    return url;
   }
 }
